@@ -1,0 +1,69 @@
+entity MUXX is
+    Port ( A : in  STD_LOGIC_VECTOR (7 downto 0);
+           S : in  STD_LOGIC_VECTOR (2 downto 0);
+           Y : out  STD_LOGIC);
+end MUXX;
+
+architecture Behavioral of MUXX is
+
+begin
+
+process(a,s)
+begin
+
+case s is
+when "000"=>y<=a(0);
+when "001"=>y<=a(1);
+when "010"=>y<=a(2);
+when "011"=>y<=a(3);
+when "100"=>y<=a(4);
+when "101"=>y<=a(5);
+when "110"=>y<=a(6);
+when others=> y<=a(7);
+end case;
+end process;
+end Behavioral;
+test bench
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ 
+ENTITY MUX_tb IS
+END MUX_tb;
+ 
+ARCHITECTURE behavior OF MUX_tb IS 
+     COMPONENT MUXX
+    PORT(
+         A : IN  std_logic_vector(7 downto 0);
+         S : IN  std_logic_vector(2 downto 0);
+         Y : OUT  std_logic
+        );
+    END COMPONENT;
+    --Inputs
+   signal A : std_logic_vector(7 downto 0) := (others => '0');
+   signal S : std_logic_vector(2 downto 0) := (others => '0');
+
+ 	--Outputs
+   signal Y : std_logic;
+ 
+BEGIN
+	-- Instantiate the Unit Under Test (UUT)
+   uut: MUXX PORT MAP (
+          A => A,
+          S => S,
+          Y => Y
+        );
+
+   stim_proc: process
+   begin
+     A (1) <= '0';
+	  S <= "000";
+     wait for 100 ns;
+	  ASSERT  Y ='0'; report"Error";
+      -- hold reset state for 100 ns.
+     
+      A(2) <= '1';
+	  S<= "001";
+      wait for 100 ns;
+	  ASSERT  Y ='1'; report"Error";		
+   end process;
+END;
