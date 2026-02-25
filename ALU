@@ -1,0 +1,89 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_arith.all;
+use IEEE.STD_LOGIC_unsigned.all;
+entity ALU is
+    Port ( A : in  STD_LOGIC_VECTOR (3 downto 0);
+           B : in  STD_LOGIC_VECTOR (3 downto 0);
+           S : in  STD_LOGIC_VECTOR (3 downto 0);
+           M  : in  STD_LOGIC;
+           F : out  STD_LOGIC_VECTOR (3 downto 0));
+end ALU;
+architecture Behavioral of ALU is
+begin
+process(A,B,S,M)
+  begin
+  If (M='0') then
+    case S is 
+  when"0000"=>F<=A+B;
+  when"0001"=>F<=A-B;
+  when"0010"=>F<=A+'1';
+  when"0011"=>F<=A-'1';
+	 when others=>Null;
+	end case;
+else 
+	  case S is
+  when"0000" => F<=A AND B;
+  when"0001" => F<=A OR B;
+  when"0010" => F<=A NAND B;
+  when"0011" => F<=NOT A;
+  when others => Null;
+  end case;
+  end if;
+  end process;
+  end  Behavioral ;
+TEST Bench
+--------------------------------------------------------------------------------
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ENTITY ALU_Test IS
+END ALU_Test;
+ARCHITECTURE behavior OF ALU_Test IS 
+ 
+    -- Component Declaration for the Unit Under Test (UUT)
+ 
+    COMPONENT ALU
+    PORT(
+         A : IN  std_logic_vector(3 downto 0);
+         B : IN  std_logic_vector(3 downto 0);
+         S : IN  std_logic_vector(3 downto 0);
+         M : IN  std_logic;
+         F : OUT  std_logic_vector(3 downto 0)
+        );
+    END COMPONENT;
+   
+   --Inputs
+   signal A : std_logic_vector(3 downto 0) := (others => '0');
+   signal B : std_logic_vector(3 downto 0) := (others => '0');
+   signal S : std_logic_vector(3 downto 0) := (others => '0');
+   signal M : std_logic := '0';
+
+ 	--Outputs
+   signal F : std_logic_vector(3 downto 0);
+BEGIN
+-- Instantiate the Unit Under Test (UUT)
+   uut: ALU PORT MAP (
+          A => A,
+          B => B,
+          S => S,
+          M => M,
+          F => F
+        );
+
+   stim_proc: process
+   begin		
+      -- hold reset state for 100 ns.
+		M <= '0' ; S <= "0000"; A <= "0001"; B <= "0010";
+		Assert F <= "0011" report "error in code";
+      wait for 100 ns;
+		M <= '1' ; S <= "0011"; A <= "0011";
+		Assert F <= "1100" report "error in code";
+      wait for 100 ns;
+		M <= '1' ; S <= "0000"; A <= "0001"; B <= "0010";
+		Assert F <= "0011" report "error in code";
+      wait for 100 ns;		
+      wait;
+   end process;
+
+END;
+
