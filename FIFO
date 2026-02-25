@@ -1,0 +1,87 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity fifo_4x8 is
+    Port (
+        CLK   : in  STD_LOGIC;
+        RESET : in  STD_LOGIC;
+        WE    : in  STD_LOGIC;                -- Write Enable
+        RE    : in  STD_LOGIC;                -- Read Enable
+        DATA_IN  : in  STD_LOGIC_VECTOR (7 downto 0);
+        DATA_OUT : out STD_LOGIC_VECTOR (7 downto 0);
+        FULL  : out STD_LOGIC;
+        EMPTY : out STD_LOGIC
+    );
+end fifo_4x8;
+
+architecture Behavioral of fifo_4x8 is
+    type mem_type is array (0 to 3) of STD_LOGIC_VECTOR (7 downto 0);
+    signal MEM : mem_type := (others => (others => '0'));
+    signal w_ptr, r_ptr : integer range 0 to 3 := 0;
+    signal count : integer range 0 to 4 := 0;
+begin
+    process(CLK, RESET)
+    begin
+        if RESET = '1' then
+            MEM <= (others => (others => '0'));
+            w_ptr <= 0;
+            r_ptr <= 0;
+            count <= 0;
+        elsif rising_edge(CLK) then
+            if WE = '1' and count < 4 then
+                MEM(w_ptr) <= DATA_IN;
+                w_ptr <= (w_ptr + 1) mod 4;
+                count <= count + 1;
+            end if;
+
+            if RE = '1' and count > 0 then
+                DATA_OUT <= MEM(r_ptr);
+                r_ptr <= (r_ptr + 1) mod 4;
+                count <= count - 1;
+            end if;
+        end if;
+    end process;
+
+    FULL  <= '1' when count = 4 else '0';
+    EMPTY <= '1' when count = 0 else '0';
+end Behavioral;
+
+testbench
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_fifo_4x8 is
+end tb_fifo_4x8;
+
+architecture test of tb_fifo_4x8 is
+    signal CLK, RESET, WE, RE : STD_LOGIC := '0';
+    signal DATA_IN, DATA_OUT : STD_LOGIC_VECTOR(7 downto 0);
+    signal FULL, EMPTY : STD_LOGIC;
+begin
+    uut: entity work.fifo_4x8
+        port map(CLK => CLK, RESET => RESET, WE => WE, RE => RE,
+                 DATA_IN => DATA_IN, DATA_OUT => DATA_OUT, FULL => FULL, EMPTY => EMPTY);
+
+    CLK <= not CLK after 5 ns;
+
+    process
+    begin
+        RESET <= '1'; wait for 10 ns;
+        RESET <= '0';
+
+        -- Write operations
+        WE <= '1'; DATA_IN <= "00000001"; wait for 10 ns;
+        DATA_IN <= "00000010"; wait for 10 ns;
+        DATA_IN <= "00000011"; wait for 10 ns;
+        DATA_IN <= "00000100"; wait for 10 ns;
+        WE <= '0';
+
+        -- Read operations
+        RE <= '1'; wait for 40 ns;
+        RE <= '0';
+
+        wait;
+    end process;
+end test;
