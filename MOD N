@@ -1,0 +1,55 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity modn_counter is
+    Port (
+        CLK   : in  STD_LOGIC;
+        RESET : in  STD_LOGIC;
+        Q     : out STD_LOGIC_VECTOR (3 downto 0)
+    );
+end mod10_counter;
+
+architecture Behavioral of mod10_counter is
+    signal count : STD_LOGIC_VECTOR(3 downto 0) := "0000";
+begin
+    process(CLK, RESET)
+    begin
+        if RESET = '1' then
+            count <= "0000";
+        elsif rising_edge(CLK) then
+            if count = "1001" then  -- when 9
+                count <= "0000";
+            else
+                count <= count + 1;
+            end if;
+        end if;
+    end process;
+
+    Q <= count;
+end Behavioral;
+
+
+TESTBENCH 
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_mod10_counter is
+end tb_mod10_counter;
+
+architecture test of tb_mod10_counter is
+    signal CLK, RESET : STD_LOGIC := '0';
+    signal Q : STD_LOGIC_VECTOR(3 downto 0);
+begin
+    uut: entity work.mod10_counter port map(CLK => CLK, RESET => RESET, Q => Q);
+
+    CLK <= not CLK after 5 ns;  -- Clock generation
+
+    process
+    begin
+        RESET <= '1'; wait for 10 ns;
+        RESET <= '0'; wait for 100 ns;
+        wait;
+    end process;
+end test;
