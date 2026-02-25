@@ -1,0 +1,82 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity keypad_interface is
+    Port (
+        clk : in STD_LOGIC;
+        row : in STD_LOGIC_VECTOR (3 downto 0);
+        col : out STD_LOGIC_VECTOR (3 downto 0);
+        key_out : out STD_LOGIC_VECTOR (3 downto 0)
+    );
+end keypad_interface;
+
+architecture Behavioral of keypad_interface is
+    signal scan : STD_LOGIC_VECTOR (3 downto 0) := "1110";
+    signal temp_key : STD_LOGIC_VECTOR (3 downto 0);
+begin
+
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            -- Row scanning logic
+            case scan is
+                when "1110" => scan <= "1101";
+                when "1101" => scan <= "1011";
+                when "1011" => scan <= "0111";
+                when others => scan <= "1110";
+            end case;
+
+            -- Column output for scanning
+            col <= scan;
+
+            -- Key detection logic
+            if row /= "1111" then
+                case scan is
+                    when "1110" =>  -- Row 1 active
+                        case row is
+                            when "1110" => temp_key <= "0001"; -- key 1
+                            when "1101" => temp_key <= "0010"; -- key 2
+                            when "1011" => temp_key <= "0011"; -- key 3
+                            when "0111" => temp_key <= "0100"; -- key 4
+                            when others => null;
+                        end case;
+
+                    when "1101" =>  -- Row 2 active
+                        case row is
+                            when "1110" => temp_key <= "0101"; -- key 5
+                            when "1101" => temp_key <= "0110"; -- key 6
+                            when "1011" => temp_key <= "0111"; -- key 7
+                            when "0111" => temp_key <= "1000"; -- key 8
+                            when others => null;
+                        end case;
+
+                    when "1011" =>  -- Row 3 active
+                        case row is
+                            when "1110" => temp_key <= "1001"; -- key 9
+                            when "1101" => temp_key <= "1010"; -- key 10
+                            when "1011" => temp_key <= "1011"; -- key 11
+                            when "0111" => temp_key <= "1100"; -- key 12
+                            when others => null;
+                        end case;
+
+                    when "0111" =>  -- Row 4 active
+                        case row is
+                            when "1110" => temp_key <= "1101"; -- key 13
+                            when "1101" => temp_key <= "1110"; -- key 14
+                            when "1011" => temp_key <= "1111"; -- key 15
+                            when "0111" => temp_key <= "0000"; -- key 16
+                            when others => null;
+                        end case;
+
+                    when others => null;
+                end case;
+            end if;
+        end if;
+    end process;
+
+    key_out <= temp_key;
+
+end Behavioral;
+
