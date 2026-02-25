@@ -1,0 +1,69 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity HA_structural is
+    Port ( A : in  STD_LOGIC;
+           B : in  STD_LOGIC;
+           sum : out  STD_LOGIC;
+           carry : out  STD_LOGIC);
+end HA_structural;
+architecture Structural of HA_structural is
+component XOR22 is
+port ( X, Y: in std_logic;
+Z : out std_logic);
+end component;
+component AND22 is
+port ( P, Q: in std_logic;
+R : out std_logic);
+end component;
+begin
+U1: XOR22 port map(A,B,sum);
+U2: AND22 port map(A,B,carry);
+end Structural;
+TEST BENCH
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ 
+ENTITY HA_TB IS
+END HA_TB;
+ ARCHITECTURE behavior OF HA_TB IS 
+     COMPONENT MOD_6
+    PORT(
+         clk : IN  std_logic;
+         rst : IN  std_logic;
+         Q : OUT  integer range 0 to 5
+        );
+    END COMPONENT;
+ --Inputs
+   signal clk : std_logic := '0';
+   signal rst : std_logic := '0';
+--Outputs
+   signal Q :  integer range 0 to 5;
+   constant clk_period : time := 10 ns;
+ 
+BEGIN
+ uut: MOD_6 PORT MAP (
+          clk => clk,
+          rst => rst,
+          Q => Q
+        );
+- - Clock process definitions
+   clk_process :process
+   begin
+		clk <= '0';
+		wait for clk_period/2;
+		clk <= '1';
+		wait for clk_period/2;
+   end process;
+    -- Stimulus process
+   stim_proc: process
+   begin 	  
+      -- hold reset state for 100 ns.
+      wait for 100 ns;	
+      rst<='1';
+	wait for 100 ns;
+	rst<='0';		
+      wait for clk_period*10;
+      wait;
+   end process;
+
+END;
